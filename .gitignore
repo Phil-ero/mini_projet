@@ -1,5 +1,7 @@
 build
 .DS_Store
+.dep
+.cproject
 # Prerequisites
 *.d
 
