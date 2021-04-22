@@ -16,6 +16,9 @@
 #include <communications.h>
 #include <arm_math.h>
 
+#include "leds.h"
+
+
 //uncomment to send the FFTs results from the real microphones
 #define SEND_FROM_MIC
 
@@ -53,9 +56,14 @@ static void timer12_start(void){
 int main(void)
 {
 
+
     halInit();
     chSysInit();
     mpu_init();
+
+    clear_leds();
+    set_body_led(0);
+    set_front_led(0);
 
     //starts the serial communication
     serial_start();
@@ -82,6 +90,9 @@ int main(void)
     while (1) {
 #ifdef SEND_FROM_MIC
         //waits until a result must be sent to the computer
+    	unsigned int value = 5;
+    	set_body_led(value);
+    	set_front_led(value);
         wait_send_to_computer();
 #ifdef DOUBLE_BUFFERING
         //we copy the buffer to avoid conflicts
