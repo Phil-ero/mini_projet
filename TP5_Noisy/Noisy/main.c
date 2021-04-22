@@ -16,7 +16,8 @@
 #include <communications.h>
 #include <arm_math.h>
 
-#include "leds.h"
+//#include "leds.h"
+#include"../../lib/e-puck2_main-processor/src/leds.h"
 
 
 //uncomment to send the FFTs results from the real microphones
