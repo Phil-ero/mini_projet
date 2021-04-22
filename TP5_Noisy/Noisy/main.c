@@ -18,7 +18,7 @@
 
 #include "leds.h"
 
-// Prout
+// Test2
 //uncomment to send the FFTs results from the real microphones
 #define SEND_FROM_MIC
 
