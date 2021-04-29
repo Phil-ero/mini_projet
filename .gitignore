@@ -2,7 +2,6 @@ build
 /lib
 .DS_Store
 .dep
-.cproject
 .settings
 # Prerequisites
 *.d
