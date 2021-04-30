@@ -3,6 +3,9 @@ build
 .DS_Store
 .dep
 .settings
+/.cproject
+/.project
+
 # Prerequisites
 *.d
 
