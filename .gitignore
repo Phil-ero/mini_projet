@@ -3,8 +3,7 @@ build
 .DS_Store
 .dep
 .settings
-/.cproject
-/.project
+
 
 # Prerequisites
 *.d
@@ -59,4 +58,6 @@ modules.order
 Module.symvers
 Mkfile.old
 dkms.conf
-TP5_Noisy/Noisy/.cproject
+
+/.cproject
+/.project
