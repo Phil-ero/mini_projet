@@ -59,7 +59,7 @@ Module.symvers
 Mkfile.old
 dkms.conf
 
-/.cproject
-/.project
+.cproject
+.project
 Disco-Epuck/.cproject
 Disco-Epuck/.project
