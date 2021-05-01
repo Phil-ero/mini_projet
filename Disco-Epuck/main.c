@@ -18,12 +18,15 @@
 
 #include "leds.h"
 
-
 //uncomment to send the FFTs results from the real microphones
 #define SEND_FROM_MIC
 
 //uncomment to use double buffering to send the FFT to the computer
 #define DOUBLE_BUFFERING
+
+//uncomment to use disco program only
+#define DISCO_EPUCK
+#define reverseled 5
 
 static void serial_start(void)
 {
@@ -55,15 +58,9 @@ static void timer12_start(void){
 
 int main(void)
 {
-
-
     halInit();
     chSysInit();
     mpu_init();
-
-    clear_leds();
-    set_body_led(0);
-    set_front_led(0);
 
     //starts the serial communication
     serial_start();
@@ -74,10 +71,21 @@ int main(void)
     //inits the motors
     motors_init();
 
+#ifdef DISCO_EPUCK
+    // inits of the disco-epuck
+    clear_leds();
+    set_body_led(0);
+    set_front_led(0);
+
+    while(1){
+    	set_body_led(reverseled);
+    	set_front_led(reverseled);
+    }
+    chThdSleepMilliseconds(500);
+#else
     //send_tab is used to save the state of the buffer to send (double buffering)
     //to avoid modifications of the buffer while sending it
     static float send_tab[FFT_SIZE];
-
     static complex_float temp_tab[FFT_SIZE];
 
 #ifdef SEND_FROM_MIC
@@ -90,9 +98,6 @@ int main(void)
     while (1) {
 #ifdef SEND_FROM_MIC
         //waits until a result must be sent to the computer
-    	unsigned int value = 5;
-    	set_body_led(value);
-    	set_front_led(value);
         wait_send_to_computer();
 #ifdef DOUBLE_BUFFERING
         //we copy the buffer to avoid conflicts
@@ -157,6 +162,7 @@ int main(void)
         }
 #endif  /* SEND_FROM_MIC */
     }
+#endif /* DISCO_EPUCK */
 }
 
 #define STACK_CHK_GUARD 0xe2dee396
