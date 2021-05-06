@@ -15,8 +15,14 @@
 #include <fft.h>
 #include <communications.h>
 #include <arm_math.h>
-
+//includes for disco-epuck
 #include "leds.h"
+#include "../lib/e-puck2_main-processor/src/sdio.h"
+#include "../lib/e-puck2_main-processor/src/fat.h"
+#include "../lib/e-puck2_main-processor/src/audio/audio_thread.h"
+#include "../lib/e-puck2_main-processor/src/audio/play_melody.h"
+#include "../lib/e-puck2_main-processor/src/audio/play_sound_file.h"
+#include "../lib/e-puck2_main-processor/src/spi_comm.h"
 
 //uncomment to send the FFTs results from the real microphones
 #define SEND_FROM_MIC
@@ -27,7 +33,7 @@
 //uncomment to use disco program only
 #define DISCO_EPUCK
 #define reverseled 5
-
+#define VOLUME_MAX 50
 static void serial_start(void)
 {
 	static SerialConfig ser_cfg = {
@@ -61,27 +67,49 @@ int main(void)
     halInit();
     chSysInit();
     mpu_init();
-
-    //starts the serial communication
-    serial_start();
-    //starts the USB communication
-    usb_start();
-    //starts timer 12
-    timer12_start();
-    //inits the motors
-    motors_init();
-
-#ifdef DISCO_EPUCK
-    // inits of the disco-epuck
+    //inits LEDS for DISCO_EPUCK
     clear_leds();
     set_body_led(0);
     set_front_led(0);
+    //starts the USB communication
+    usb_start();
+    //inits the motors
+    motors_init();
+    //start for the disco-epuck sound-system
+   	dac_start();
+    //starts the serial communication
+   	spi_comm_start();
+    serial_start();
+    //starts timer 12
+    timer12_start();
+    //mounting the SDCARD
+    sdio_start();
+    mountSDCard();
+//  playMelodyStart();
+    playSoundFileStart();
 
+#ifdef DISCO_EPUCK
     while(1){
-    	set_body_led(reverseled);
-    	set_front_led(reverseled);
+    	if (isSDCardMounted()){
+    		set_body_led(reverseled);
+    		set_front_led(reverseled);
+    		// char root[] ="robot_dance";
+    		  //  scan_files((BaseSequentialStream *) &SDU1, root);
+    		   // BYTE size_SD = getSDCardClusterSize();
+    		    //chprintf((BaseSequentialStream *) &SDU1,"size_SD %d",size_SD);
+    		    char robot[]= "robot_dance/1.wav";
+    		    setSoundFileVolume(VOLUME_MAX);
+    		    playSoundFile(robot, SF_SIMPLE_PLAY);
+    	}
+    	else {
+    		//max value 255
+    		toggle_rgb_led(LED2,RED_LED,200);
+    		toggle_rgb_led(LED2,GREEN_LED,200);
+    		toggle_rgb_led(LED2,BLUE_LED,0);
+    		set_rgb_led(LED4,25,0,23);
+    	}
+    	chThdSleepMilliseconds(500);
     }
-    chThdSleepMilliseconds(500);
 #else
     //send_tab is used to save the state of the buffer to send (double buffering)
     //to avoid modifications of the buffer while sending it

@@ -63,3 +63,4 @@ dkms.conf
 .project
 Disco-Epuck/.cproject
 Disco-Epuck/.project
+*.launch
