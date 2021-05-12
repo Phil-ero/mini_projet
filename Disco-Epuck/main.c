@@ -15,15 +15,24 @@
 #include <fft.h>
 #include <communications.h>
 #include <arm_math.h>
+#include <proximity.h>
+
 
 #include "leds.h"
 
+
+messagebus_t bus;
+MUTEX_DECL(bus_lock);
+CONDVAR_DECL(bus_condvar);
 
 //uncomment to send the FFTs results from the real microphones
 #define SEND_FROM_MIC
 
 //uncomment to use double buffering to send the FFT to the computer
 #define DOUBLE_BUFFERING
+
+
+#define PROXIMITY_SENSORS
 
 static void serial_start(void)
 {
@@ -57,6 +66,9 @@ int main(void)
 {
 
 
+	//init of bus :
+	messagebus_init(&bus, &bus_lock, &bus_condvar);
+
     halInit();
     chSysInit();
     mpu_init();
@@ -78,84 +90,98 @@ int main(void)
     //to avoid modifications of the buffer while sending it
     static float send_tab[FFT_SIZE];
 
-    static complex_float temp_tab[FFT_SIZE];
+//    static complex_float temp_tab[FFT_SIZE];
 
-#ifdef SEND_FROM_MIC
-    //starts the microphones processing thread.
-    //it calls the callback given in parameter when samples are ready
-    mic_start(&processAudioData);
-#endif  /* SEND_FROM_MIC */
+
+//#ifdef SEND_FROM_MIC
+//    //starts the microphones processing thread.
+//    //it calls the callback given in parameter when samples are ready
+//    mic_start(&processAudioData);
+//#endif  /* SEND_FROM_MIC */
+
+#ifdef PROXIMITY_SENSORS
+
+    proximity_start();
+    calibrate_ir();
+
+#endif  /* PROXIMITY_SENSORS */
 
     /* Infinite loop. */
     while (1) {
-#ifdef SEND_FROM_MIC
-        //waits until a result must be sent to the computer
-    	unsigned int value = 5;
-    	set_body_led(value);
-    	set_front_led(value);
-        wait_send_to_computer();
-#ifdef DOUBLE_BUFFERING
-        //we copy the buffer to avoid conflicts
-        arm_copy_f32(get_audio_buffer_ptr(LEFT_OUTPUT), send_tab, FFT_SIZE);
-        SendFloatToComputer((BaseSequentialStream *) &SD3, send_tab, FFT_SIZE);
-#else
-        SendFloatToComputer((BaseSequentialStream *) &SD3, get_audio_buffer_ptr(LEFT_OUTPUT), FFT_SIZE);
-#endif  /* DOUBLE_BUFFERING */
-#else
 
-        float* bufferCmplxInput = get_audio_buffer_ptr(LEFT_CMPLX_INPUT);
-        float* bufferOutput = get_audio_buffer_ptr(LEFT_OUTPUT);
-        //time measurement variables
-        volatile uint16_t time_fft_opti = 0;
-        volatile uint16_t time_mag = 0;
-        volatile uint16_t time_fft_non =0;
+#ifdef PROXIMITY_SENSORS
 
-        uint16_t size = ReceiveInt16FromComputer((BaseSequentialStream *) &SD3, bufferCmplxInput, FFT_SIZE);
+       // chThdSleepMilliseconds(1000);
+#endif  /* PROXIMITY_SENSORS */
 
-        if(size == FFT_SIZE){
-        	/*
-        	* Non optimized FFT
-        	*/
-        	//converting float buffer into complex_float
-        	for(uint16_t i = 0 ; i < (2*FFT_SIZE) ; i+=2){
-        	temp_tab[i/2].real = bufferCmplxInput[i];
-        	temp_tab[i/2].imag = bufferCmplxInput[i+1];
-        	}
-        	//measure time of FFT_C
-        	chSysLock();
-        	//reset the timer counter
-        	GPTD12.tim->CNT = 0;
-        	doFFT_c(FFT_SIZE, temp_tab);
-        	time_fft_non = GPTD12.tim->CNT;
-        	chSysUnlock();
-
-        	//reconverts the result into a float buffer
-        	for(uint16_t i = 0 ; i < (2*FFT_SIZE) ; i+=2){
-        	bufferCmplxInput[i] = temp_tab[i/2].real;
-        	bufferCmplxInput[i+1] = temp_tab[i/2].imag;
-        	}
-        	/*
-        	* Optimized FFT
-        	*/
-        	 chSysLock();
-        	 //reset the timer counter
-        	 GPTD12.tim->CNT = 0;
-        	 doFFT_optimized(FFT_SIZE, bufferCmplxInput);
-        	 time_fft_opti = GPTD12.tim->CNT;
-        	 chSysUnlock();
-
-        	chSysLock();
-        	//reset the timer counter
-        	GPTD12.tim->CNT = 0;
-        	arm_cmplx_mag_f32(bufferCmplxInput, bufferOutput, FFT_SIZE);
-        	time_mag = GPTD12.tim->CNT;
-        	chSysUnlock();
-
-            SendFloatToComputer((BaseSequentialStream *) &SD3, bufferOutput, FFT_SIZE);
-            chprintf((BaseSequentialStream *) &SDU1, "time_fft_non = %d us, time_fft_opti = %d us, time_magnitude = %d us\n",
-            time_fft_non, time_fft_opti, time_mag);
-        }
-#endif  /* SEND_FROM_MIC */
+//#ifdef SEND_FROM_MIC
+//        //waits until a result must be sent to the computer
+//    	unsigned int value = 5;
+//    	set_body_led(value);
+//    	set_front_led(value);
+//        wait_send_to_computer();
+//#ifdef DOUBLE_BUFFERING
+//        //we copy the buffer to avoid conflicts
+//        arm_copy_f32(get_audio_buffer_ptr(LEFT_OUTPUT), send_tab, FFT_SIZE);
+//        SendFloatToComputer((BaseSequentialStream *) &SD3, send_tab, FFT_SIZE);
+//#else
+//        SendFloatToComputer((BaseSequentialStream *) &SD3, get_audio_buffer_ptr(LEFT_OUTPUT), FFT_SIZE);
+//#endif  /* DOUBLE_BUFFERING */
+//#else
+//
+//        float* bufferCmplxInput = get_audio_buffer_ptr(LEFT_CMPLX_INPUT);
+//        float* bufferOutput = get_audio_buffer_ptr(LEFT_OUTPUT);
+//        //time measurement variables
+//        volatile uint16_t time_fft_opti = 0;
+//        volatile uint16_t time_mag = 0;
+//        volatile uint16_t time_fft_non =0;
+//
+//        uint16_t size = ReceiveInt16FromComputer((BaseSequentialStream *) &SD3, bufferCmplxInput, FFT_SIZE);
+//
+//        if(size == FFT_SIZE){
+//        	/*
+//        	* Non optimized FFT
+//        	*/
+//        	//converting float buffer into complex_float
+//        	for(uint16_t i = 0 ; i < (2*FFT_SIZE) ; i+=2){
+//        	temp_tab[i/2].real = bufferCmplxInput[i];
+//        	temp_tab[i/2].imag = bufferCmplxInput[i+1];
+//        	}
+//        	//measure time of FFT_C
+//        	chSysLock();
+//        	//reset the timer counter
+//        	GPTD12.tim->CNT = 0;
+//        	doFFT_c(FFT_SIZE, temp_tab);
+//        	time_fft_non = GPTD12.tim->CNT;
+//        	chSysUnlock();
+//
+//        	//reconverts the result into a float buffer
+//        	for(uint16_t i = 0 ; i < (2*FFT_SIZE) ; i+=2){
+//        	bufferCmplxInput[i] = temp_tab[i/2].real;
+//        	bufferCmplxInput[i+1] = temp_tab[i/2].imag;
+//        	}
+//        	/*
+//        	* Optimized FFT
+//        	*/
+//        	 chSysLock();
+//        	 //reset the timer counter
+//        	 GPTD12.tim->CNT = 0;
+//        	 doFFT_optimized(FFT_SIZE, bufferCmplxInput);
+//        	 time_fft_opti = GPTD12.tim->CNT;
+//        	 chSysUnlock();
+//
+//        	chSysLock();
+//        	//reset the timer counter
+//        	GPTD12.tim->CNT = 0;
+//        	arm_cmplx_mag_f32(bufferCmplxInput, bufferOutput, FFT_SIZE);
+//        	time_mag = GPTD12.tim->CNT;
+//        	chSysUnlock();
+//
+//            SendFloatToComputer((BaseSequentialStream *) &SD3, bufferOutput, FFT_SIZE);
+//            chprintf((BaseSequentialStream *) &SDU1, "time_fft_non = %d us, time_fft_opti = %d us, time_magnitude = %d us\n",
+//            time_fft_non, time_fft_opti, time_mag);
+//        }
+//#endif  /* SEND_FROM_MIC */
     }
 }
 

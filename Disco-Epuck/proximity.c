@@ -4,6 +4,7 @@
 #include "hal.h"
 #include "proximity.h"
 #include <main.h>
+#include <motors.h>
 
 // The proximity sensors sampling is designed in order to sample two sensors at one time, the couples are chosen
 // in order to have as less interference as possible and divided as follow:
@@ -40,6 +41,10 @@
 #define DMA_BUFFER_SIZE 1 // 1 sample for each ADC channel
 
 #define EXTSEL_TIM2_CH2 0x03
+
+#define NO_PROX_DETECTED 8 // value if nothing is near the robot
+#define PROXIMITY_MIN 15 // min value of the ir sensors
+
 
 static unsigned int adc2_values[PROXIMITY_NB_CHANNELS*2] = {0};
 static BSEMAPHORE_DECL(adc2_ready, true);
@@ -166,7 +171,6 @@ static THD_FUNCTION(proximity_thd, arg)
     CONDVAR_DECL(prox_topic_condvar);
     messagebus_topic_init(&proximity_topic, &prox_topic_lock, &prox_topic_condvar, &prox_values, sizeof(prox_values));
     messagebus_advertise_topic(&bus, &proximity_topic, "/proximity");
-
     while (true) {
 
     	chBSemWait(&adc2_ready);
@@ -218,6 +222,7 @@ static THD_FUNCTION(proximity_thd, arg)
 					break;
         	}
         }
+        proximity_remote();
 
     }
 }
@@ -285,6 +290,69 @@ static void pwm_ch1_cb(PWMDriver *pwmp) {
 
 
 /****************************PUBLIC FUNCTIONS*************************************/
+
+void proximity_remote(void)
+{
+	//get values from the ir sensors with calibration
+	unsigned int prox_delta[PROXIMITY_NB_CHANNELS];
+	for(uint8_t i = 0; i < PROXIMITY_NB_CHANNELS;i++){
+		prox_delta[i] = get_calibrated_prox(i);
+	}
+
+	//search for the closest object around the EPUCK
+	unsigned int max_prox = 0;
+	uint8_t max_prox_index = NO_PROX_DETECTED;
+	for(uint8_t i = 0; i < PROXIMITY_NB_CHANNELS;i++){
+		if(prox_delta[i]>max_prox && prox_delta[i] > PROXIMITY_MIN){
+			max_prox = prox_delta[i];
+			max_prox_index = i;
+		}
+	}
+	//search for the second closest object around the EPUCK
+//	unsigned int max2_prox = 0;
+//	uint8_t max2_prox_index = NO_PROX_DETECTED;
+//	for(uint8_t i = 0; i < PROXIMITY_NB_CHANNELS;i++){
+//		if(i != max_prox_index && prox_delta[i]>max2_prox && prox_delta[i] > prox_values.initValue[i]){
+//			max2_prox = prox_delta[i];
+//			max2_prox_index = i;
+//		}
+//	}
+//	if(abs(max_prox - max2_prox) < prox_values.initValue[max_prox_index]/2){
+//		max_prox_index = NO_PROX_DETECTED;
+//	}
+	// 2 sensors in front -> in this case go backward
+	if(max_prox_index == 0 || max_prox_index == 7){
+		left_motor_set_speed(-300);
+		right_motor_set_speed(-300);
+	}
+	// 2 sensors in the back -> in this case go straight forward
+	else if (max_prox_index == 3 || max_prox_index == 4){
+		left_motor_set_speed(300);
+		right_motor_set_speed(300);
+	}
+	// don't move if max_prox is smaller than PROXIMITY_MIN
+	else{//(max_prox_index == NO_PROX_DETECTED){
+		left_motor_set_speed(0);
+		right_motor_set_speed(0);
+	}
+	// the four next : if the max is with the sensors on the side, need to turn itself
+//	else if(max_prox_index == 1){
+//		left_motor_set_speed(300);
+//		right_motor_set_speed(-300);
+//	}
+//	else if(max_prox_index == 2){
+//		left_motor_set_speed(600);
+//		right_motor_set_speed(-600);
+//	}
+//	else if(max_prox_index == 5){
+//		left_motor_set_speed(-600);
+//		right_motor_set_speed(600);
+//	}
+//	else if(max_prox_index == 6){
+//		left_motor_set_speed(-300);
+//		right_motor_set_speed(300);
+//	}
+}
 
 void proximity_start(void)
 {

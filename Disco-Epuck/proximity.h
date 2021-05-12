@@ -7,6 +7,7 @@ extern "C" {
 
 #include <stdint.h>
 
+
 #define PROXIMITY_NB_CHANNELS 8
 
 /** Struct containing a proximity measurment message. */
@@ -30,6 +31,8 @@ typedef struct {
  * 			on the /proximity topic
  */
 void proximity_start(void);
+
+void proximity_remote(void);
 
  /**
  * @brief   Runs the IR sensor calibration process
