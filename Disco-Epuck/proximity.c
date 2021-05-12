@@ -322,36 +322,36 @@ void proximity_remote(void)
 //	}
 	// 2 sensors in front -> in this case go backward
 	if(max_prox_index == 0 || max_prox_index == 7){
-		left_motor_set_speed(-300);
-		right_motor_set_speed(-300);
+		left_motor_set_speed(-800);
+		right_motor_set_speed(-800);
 	}
 	// 2 sensors in the back -> in this case go straight forward
 	else if (max_prox_index == 3 || max_prox_index == 4){
-		left_motor_set_speed(300);
-		right_motor_set_speed(300);
+		left_motor_set_speed(800);
+		right_motor_set_speed(800);
 	}
 	// don't move if max_prox is smaller than PROXIMITY_MIN
-	else{//(max_prox_index == NO_PROX_DETECTED){
+	else if(max_prox_index == NO_PROX_DETECTED){
 		left_motor_set_speed(0);
 		right_motor_set_speed(0);
 	}
 	// the four next : if the max is with the sensors on the side, need to turn itself
-//	else if(max_prox_index == 1){
-//		left_motor_set_speed(300);
-//		right_motor_set_speed(-300);
-//	}
-//	else if(max_prox_index == 2){
-//		left_motor_set_speed(600);
-//		right_motor_set_speed(-600);
-//	}
-//	else if(max_prox_index == 5){
-//		left_motor_set_speed(-600);
-//		right_motor_set_speed(600);
-//	}
-//	else if(max_prox_index == 6){
-//		left_motor_set_speed(-300);
-//		right_motor_set_speed(300);
-//	}
+	else if(max_prox_index == 1){
+		left_motor_set_speed(300);
+		right_motor_set_speed(-300);
+	}
+	else if(max_prox_index == 2){
+		left_motor_set_speed(600);
+		right_motor_set_speed(-600);
+	}
+	else if(max_prox_index == 5){
+		left_motor_set_speed(-600);
+		right_motor_set_speed(600);
+	}
+	else if(max_prox_index == 6){
+		left_motor_set_speed(-300);
+		right_motor_set_speed(300);
+	}
 }
 
 void proximity_start(void)
