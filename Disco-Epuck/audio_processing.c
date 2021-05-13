@@ -50,7 +50,7 @@ static float micLeft_output[FFT_SIZE];
 * and to execute a motor command depending on it
 */
 void sound_remote(float* data){
-	float max_norm = MIN_VALUE_THRESHOLD*2.5;
+	float max_norm = MIN_VALUE_THRESHOLD*3.5;
 	int16_t max_norm_index = -1;
 	//search for the highest peak
 	for(uint16_t i = MIN_FREQ ; i <= MAX_FREQ ; i++){

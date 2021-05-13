@@ -17,12 +17,16 @@
 #include <arm_math.h>
 
 //includes for disco-epuck
+#include <proximity.h>
 #include "leds.h"
 #include "../lib/e-puck2_main-processor/src/sdio.h"
 #include "../lib/e-puck2_main-processor/src/fat.h"
 #include "../lib/e-puck2_main-processor/src/audio/audio_thread.h"
 #include "../lib/e-puck2_main-processor/src/spi_comm.h"
 
+messagebus_t bus;
+MUTEX_DECL(bus_lock);
+CONDVAR_DECL(bus_condvar);
 
 //uncomment to send the FFTs results from the real microphones
 #define SEND_FROM_MIC
@@ -146,6 +150,8 @@ bool get_mode(void){
 
 int main(void)
 {
+	//init of bus :
+	messagebus_init(&bus, &bus_lock, &bus_condvar);
     halInit();
     chSysInit();
     mpu_init();
@@ -156,6 +162,8 @@ int main(void)
     usb_start();
     //inits the motors
     motors_init();
+    proximity_start();
+    calibrate_ir();
     //start for the disco-epuck sound-system
    	dac_start();
     //starts the serial communication
