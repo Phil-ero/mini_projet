@@ -14,7 +14,7 @@ enum dance_selection{
 	//dances available
 	ZELDA_COFFRE = 0,
 	SMASH_INTRO,
-	LAST_OF_US,
+	PIRATES_CARAIBES,
 	NB_DANCES,
 };
 

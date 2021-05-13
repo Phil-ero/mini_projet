@@ -16,14 +16,14 @@ static BSEMAPHORE_DECL(sendToComputer_sem, TRUE);
 
 //2 times FFT_SIZE because these arrays contain complex numbers (real + imaginary)
 static float micLeft_cmplx_input[2 * FFT_SIZE];
-static float micRight_cmplx_input[2 * FFT_SIZE];
-static float micFront_cmplx_input[2 * FFT_SIZE];
-static float micBack_cmplx_input[2 * FFT_SIZE];
+//static float micRight_cmplx_input[2 * FFT_SIZE];
+//static float micFront_cmplx_input[2 * FFT_SIZE];
+//static float micBack_cmplx_input[2 * FFT_SIZE];
 //Arrays containing the computed magnitude of the complex numbers
 static float micLeft_output[FFT_SIZE];
-static float micRight_output[FFT_SIZE];
-static float micFront_output[FFT_SIZE];
-static float micBack_output[FFT_SIZE];
+//static float micRight_output[FFT_SIZE];
+//static float micFront_output[FFT_SIZE];
+//static float micBack_output[FFT_SIZE];
 
 #define MIN_VALUE_THRESHOLD 10000
 //resolution of 8kHz/512 = 15.625 Hz // 512 des 1024 utile car dans une FFT il a le pic dans les négatifs
@@ -71,7 +71,6 @@ void sound_remote(float* data){
 	}
 	//dance 1
 	else if(max_norm_index >= FREQ_DANCE1_L && max_norm_index <= FREQ_DANCE1_H && !get_mode()){
-		//stopCurrentSoundFile();
 		change_dance(ZELDA_COFFRE);
 		change_mode(dance_mode);
 		change_blink_speed (500);
@@ -80,7 +79,6 @@ void sound_remote(float* data){
 	}
 	//dance 2
 	else if(max_norm_index >= FREQ_DANCE2_L && max_norm_index <= FREQ_DANCE2_H && !get_mode()){
-		//stopCurrentSoundFile();
 		change_dance(SMASH_INTRO);
 		change_mode(dance_mode);
 		change_blink_speed (200);
@@ -89,8 +87,7 @@ void sound_remote(float* data){
 	}
 	//dance 3
 	else if(max_norm_index >= FREQ_DANCE3_L && max_norm_index <= FREQ_DANCE3_H && !get_mode()){
-		//stopCurrentSoundFile();
-		change_dance(LAST_OF_US);
+		change_dance(PIRATES_CARAIBES);
 		change_mode(dance_mode);
 		change_blink_speed (1000);
 		left_motor_set_speed(0);
@@ -181,27 +178,27 @@ float* get_audio_buffer_ptr(BUFFER_NAME_t name){
 	if(name == LEFT_CMPLX_INPUT){
 		return micLeft_cmplx_input;
 	}
-	else if (name == RIGHT_CMPLX_INPUT){
-		return micRight_cmplx_input;
-	}
-	else if (name == FRONT_CMPLX_INPUT){
-		return micFront_cmplx_input;
-	}
-	else if (name == BACK_CMPLX_INPUT){
-		return micBack_cmplx_input;
-	}
-	else if (name == LEFT_OUTPUT){
-		return micLeft_output;
-	}
-	else if (name == RIGHT_OUTPUT){
-		return micRight_output;
-	}
-	else if (name == FRONT_OUTPUT){
-		return micFront_output;
-	}
-	else if (name == BACK_OUTPUT){
-		return micBack_output;
-	}
+//	else if (name == RIGHT_CMPLX_INPUT){
+//		return micRight_cmplx_input;
+//	}
+//	else if (name == FRONT_CMPLX_INPUT){
+//		return micFront_cmplx_input;
+//	}
+//	else if (name == BACK_CMPLX_INPUT){
+//		return micBack_cmplx_input;
+//	}
+//	else if (name == LEFT_OUTPUT){
+//		return micLeft_output;
+//	}
+//	else if (name == RIGHT_OUTPUT){
+//		return micRight_output;
+//	}
+//	else if (name == FRONT_OUTPUT){
+//		return micFront_output;
+//	}
+//	else if (name == BACK_OUTPUT){
+//		return micBack_output;
+//	}
 	else{
 		return NULL;
 	}
