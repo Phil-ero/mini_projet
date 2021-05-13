@@ -15,14 +15,16 @@
 #include <fft.h>
 #include <communications.h>
 #include <arm_math.h>
+
 //includes for disco-epuck
+//#include "disco_epuck.h"
 #include "leds.h"
 #include "../lib/e-puck2_main-processor/src/sdio.h"
 #include "../lib/e-puck2_main-processor/src/fat.h"
 #include "../lib/e-puck2_main-processor/src/audio/audio_thread.h"
-#include "../lib/e-puck2_main-processor/src/audio/play_melody.h"
-#include "../lib/e-puck2_main-processor/src/audio/play_sound_file.h"
+//#include "../lib/e-puck2_main-processor/src/audio/play_melody.h"
 #include "../lib/e-puck2_main-processor/src/spi_comm.h"
+
 
 //uncomment to send the FFTs results from the real microphones
 #define SEND_FROM_MIC
@@ -32,8 +34,14 @@
 
 //uncomment to use disco program only
 #define DISCO_EPUCK
-#define reverseled 5
+#define reverseled 2
+#define NB_DANCES 3
 #define VOLUME_MAX 50
+static bool Dance_playing = 0;
+static int Dance_choice =0;
+static int blink_ms = 1000;
+
+
 static void serial_start(void)
 {
 	static SerialConfig ser_cfg = {
@@ -62,6 +70,85 @@ static void timer12_start(void){
     gptStartContinuous(&GPTD12, 0xFFFF);
 }
 
+static const int red_rgb[NB_DANCES][NUM_RGB_LED] = {
+	{47,13,0,52},
+	{43,20,10,0},
+	{34,2,56,6},
+//	{37,25,6,69},
+};
+
+static const int green_rgb[NB_DANCES][NUM_RGB_LED] = {
+	{9,0,84,93},
+	{85,44,32,22},
+	{0,83,5,13},
+//	{4,57,50,39},
+};
+static const int blue_rgb[NB_DANCES][NUM_RGB_LED] = {
+	{86,0,10,0},
+	{15,47,21,49},
+	{4,67,42,47},
+//	{2,5,34,0},
+};
+
+void toggle_dance_leds(bool dance ,int choice){
+	if(dance){
+		//blink body and front leds
+		set_body_led(reverseled);
+		set_front_led(reverseled);
+		//blink for the red LED
+		for (int i = 0; i< NUM_LED; i++){
+			set_led(i, reverseled);
+		}
+		//Blink for the RGB LED
+		for(int i = 0; i< NUM_RGB_LED; i++){
+			toggle_rgb_led(i,RED_LED,red_rgb[choice][i]);
+			toggle_rgb_led(i,GREEN_LED,green_rgb[choice][i]);
+			toggle_rgb_led(i,BLUE_LED,blue_rgb[choice][i]);
+		}
+	}
+	else{
+		clear_leds();
+		set_body_led(dance);
+		set_front_led(dance);
+	}
+}
+
+void play_music(bool dance ,int choice){
+	char robot[]= "robot_dance/1.wav";
+	char robot1[]= "robot_dance/2.wav";
+	char robot2[]= "robot_dance/3.wav";
+
+	if (isSDCardMounted()&&dance){
+		switch(choice){
+			case ZELDA_COFFRE:
+				playSoundFile(robot, SF_SIMPLE_PLAY);
+				break;
+			case SMASH_INTRO:
+				playSoundFile(robot1, SF_SIMPLE_PLAY);
+				break;
+			case LAST_OF_US:
+				playSoundFile(robot2, SF_SIMPLE_PLAY);
+				break;
+		}
+	}
+}
+
+void change_mode(bool mode){
+	Dance_playing = mode;
+}
+
+void change_dance(int dance_nb){
+	Dance_choice = dance_nb;
+}
+
+void change_blink_speed (int blink){
+	blink_ms = blink;
+}
+
+bool get_mode(void){
+	return Dance_playing;
+}
+
 int main(void)
 {
     halInit();
@@ -87,28 +174,15 @@ int main(void)
     mountSDCard();
 //  playMelodyStart();
     playSoundFileStart();
+    setSoundFileVolume(VOLUME_MAX*0.6);
 
 #ifdef DISCO_EPUCK
+    mic_start(&processAudioData);
     while(1){
-    	if (isSDCardMounted()){
-    		set_body_led(reverseled);
-    		set_front_led(reverseled);
-    		// char root[] ="robot_dance";
-    		  //  scan_files((BaseSequentialStream *) &SDU1, root);
-    		   // BYTE size_SD = getSDCardClusterSize();
-    		    //chprintf((BaseSequentialStream *) &SDU1,"size_SD %d",size_SD);
-    		    char robot[]= "robot_dance/1.wav";
-    		    setSoundFileVolume(VOLUME_MAX);
-    		    playSoundFile(robot, SF_SIMPLE_PLAY);
-    	}
-    	else {
-    		//max value 255
-    		toggle_rgb_led(LED2,RED_LED,200);
-    		toggle_rgb_led(LED2,GREEN_LED,200);
-    		toggle_rgb_led(LED2,BLUE_LED,0);
-    		set_rgb_led(LED4,25,0,23);
-    	}
-    	chThdSleepMilliseconds(500);
+    	//main thread is charged of the blinks of the leds depending of dance.
+    	toggle_dance_leds(Dance_playing,Dance_choice);
+    	play_music(Dance_playing,Dance_choice);
+    	chThdSleepMilliseconds(blink_ms);
     }
 #else
     //send_tab is used to save the state of the buffer to send (double buffering)
