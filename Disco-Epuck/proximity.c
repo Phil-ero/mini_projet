@@ -43,7 +43,7 @@
 #define EXTSEL_TIM2_CH2 0x03
 
 #define NO_PROX_DETECTED 8 // value if nothing is near the robot
-#define PROXIMITY_MIN 20 // min value of the ir sensors
+#define PROXIMITY_MIN 35 // min value of the ir sensors
 
 
 static unsigned int adc2_values[PROXIMITY_NB_CHANNELS*2] = {0};
@@ -323,13 +323,13 @@ void proximity_remote(void)
 //	}
 	// 2 sensors in front -> in this case go backward
 	if(max_prox_index == 0 || max_prox_index == 7){
-		left_motor_set_speed(-800);
-		right_motor_set_speed(-800);
+		left_motor_set_speed(-600);
+		right_motor_set_speed(-600);
 	}
 	// 2 sensors in the back -> in this case go straight forward
 	else if (max_prox_index == 3 || max_prox_index == 4){
-		left_motor_set_speed(800);
-		right_motor_set_speed(800);
+		left_motor_set_speed(600);
+		right_motor_set_speed(600);
 	}
 	// don't move if max_prox is smaller than PROXIMITY_MIN
 	else if(max_prox_index == NO_PROX_DETECTED){
@@ -338,8 +338,8 @@ void proximity_remote(void)
 	}
 	// the four next : if the max is with the sensors on the side, need to turn itself
 	else if(max_prox_index == 1){
-		left_motor_set_speed(300);
-		right_motor_set_speed(-300);
+		left_motor_set_speed(600);
+		right_motor_set_speed(-600);
 	}
 	else if(max_prox_index == 2){
 		left_motor_set_speed(600);
@@ -350,8 +350,8 @@ void proximity_remote(void)
 		right_motor_set_speed(600);
 	}
 	else if(max_prox_index == 6){
-		left_motor_set_speed(-300);
-		right_motor_set_speed(300);
+		left_motor_set_speed(-600);
+		right_motor_set_speed(600);
 	}
 }
 
