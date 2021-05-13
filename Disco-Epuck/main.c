@@ -113,9 +113,9 @@ void toggle_dance_leds(bool dance ,int choice){
 }
 
 void play_music(bool dance ,int choice){
-	char robot[]= "robot_dance/1.wav";
-	char robot1[]= "robot_dance/2.wav";
-	char robot2[]= "robot_dance/3.wav";
+	char robot[]= "robot/ZELDA.wav";
+	char robot1[]= "robot/SMAS.wav";
+	char robot2[]= "robot/3.wav";
 
 	if (isSDCardMounted()&&dance){
 		switch(choice){
@@ -162,8 +162,8 @@ int main(void)
     usb_start();
     //inits the motors
     motors_init();
-    proximity_start();
-    calibrate_ir();
+//    proximity_start();
+//    calibrate_ir();
     //start for the disco-epuck sound-system
    	dac_start();
     //starts the serial communication
@@ -177,6 +177,8 @@ int main(void)
     //starting THD soundfiles
     playSoundFileStart();
     setSoundFileVolume(VOLUME_MAX*0.6);
+     proximity_start();
+     calibrate_ir();
 
 #ifdef DISCO_EPUCK
     mic_start(&processAudioData);

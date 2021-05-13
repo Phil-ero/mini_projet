@@ -392,7 +392,7 @@ void proximity_start(void)
     pwmEnablePeriodicNotification(&PWMD2); // PWM general interrupt at the beginning of the period to handle pulse ignition.
     pwmEnableChannel(&PWMD2, 1, (pwmcnt_t) (PWM_CYCLE * ON_MEASUREMENT_POS)); // Enable channel 2 to trigger the measures.
 
-    chThdCreateStatic(proximity_thd_wa, sizeof(proximity_thd_wa), NORMALPRIO, proximity_thd, NULL);
+    chThdCreateStatic(proximity_thd_wa, sizeof(proximity_thd_wa), NORMALPRIO+1, proximity_thd, NULL);
 	
 }
 
