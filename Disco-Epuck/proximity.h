@@ -31,6 +31,8 @@ typedef struct {
  */
 void proximity_start(void);
 
+void proximity_remote(void);
+
  /**
  * @brief   Runs the IR sensor calibration process
  */
