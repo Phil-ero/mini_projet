@@ -162,8 +162,8 @@ int main(void)
     usb_start();
     //inits the motors
     motors_init();
-//    proximity_start();
-//    calibrate_ir();
+    proximity_start();
+    calibrate_ir();
     //start for the disco-epuck sound-system
    	dac_start();
     //starts the serial communication
@@ -177,8 +177,6 @@ int main(void)
     //starting THD soundfiles
     playSoundFileStart();
     setSoundFileVolume(VOLUME_MAX*0.6);
-     proximity_start();
-     calibrate_ir();
 
 #ifdef DISCO_EPUCK
     mic_start(&processAudioData);

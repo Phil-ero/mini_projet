@@ -43,7 +43,9 @@
 #define EXTSEL_TIM2_CH2 0x03
 
 #define NO_PROX_DETECTED 8 // value if nothing is near the robot
-#define PROXIMITY_MIN 20 // min value of the ir sensors
+#define PROXIMITY_MIN 35 // min value of the ir sensors
+#define SPEED_STEP 25 // step of changing speed
+#define MAX_SPEED 600
 
 
 static unsigned int adc2_values[PROXIMITY_NB_CHANNELS*2] = {0};
@@ -55,6 +57,9 @@ static uint8_t calibrationState = 0;
 static uint8_t calibrationNumSamples = 0;
 static int32_t calibrationSum[PROXIMITY_NB_CHANNELS] = {0};
 static proximity_msg_t prox_values;
+static int right_motor_speed = 0;
+static int left_motor_speed = 0;
+
 
 /***************************INTERNAL FUNCTIONS************************************/
 
@@ -309,50 +314,54 @@ void proximity_remote(void)
 			max_prox_index = i;
 		}
 	}
-	//search for the second closest object around the EPUCK
-//	unsigned int max2_prox = 0;
-//	uint8_t max2_prox_index = NO_PROX_DETECTED;
-//	for(uint8_t i = 0; i < PROXIMITY_NB_CHANNELS;i++){
-//		if(i != max_prox_index && prox_delta[i]>max2_prox && prox_delta[i] > prox_values.initValue[i]){
-//			max2_prox = prox_delta[i];
-//			max2_prox_index = i;
-//		}
-//	}
-//	if(abs(max_prox - max2_prox) < prox_values.initValue[max_prox_index]/2){
-//		max_prox_index = NO_PROX_DETECTED;
-//	}
-	// 2 sensors in front -> in this case go backward
+	// 2 sensors in front -> in this case go backward after stopping the rotation of the robot
 	if(max_prox_index == 0 || max_prox_index == 7){
-		left_motor_set_speed(-800);
-		right_motor_set_speed(-800);
+		right_motor_speed -= SPEED_STEP;
+		left_motor_speed -= SPEED_STEP;
 	}
-	// 2 sensors in the back -> in this case go straight forward
+	// 2 sensors in the back -> in this case go straight forward after stopping the rotation of the robot
 	else if (max_prox_index == 3 || max_prox_index == 4){
-		left_motor_set_speed(800);
-		right_motor_set_speed(800);
+		right_motor_speed += SPEED_STEP;
+		left_motor_speed += SPEED_STEP;
 	}
-	// don't move if max_prox is smaller than PROXIMITY_MIN
+	// Stop the robot if max_prox is smaller than PROXIMITY_MIN
 	else if(max_prox_index == NO_PROX_DETECTED){
-		left_motor_set_speed(0);
-		right_motor_set_speed(0);
+		if(right_motor_speed > 0){
+			right_motor_speed -= SPEED_STEP;
+		}if(right_motor_speed < 0){
+			right_motor_speed += SPEED_STEP;
+		}
+		if(left_motor_speed > 0){
+			left_motor_speed -= SPEED_STEP;
+		}if(left_motor_speed < 0){
+			left_motor_speed += SPEED_STEP;
+		}
 	}
-	// the four next : if the max is with the sensors on the side, need to turn itself
-	else if(max_prox_index == 1){
-		left_motor_set_speed(300);
-		right_motor_set_speed(-300);
+	// The 4 sensors on the side -> turn itself
+	else if(max_prox_index == 1 || max_prox_index == 2){
+		right_motor_speed -= SPEED_STEP;
+		left_motor_speed += SPEED_STEP;
 	}
-	else if(max_prox_index == 2){
-		left_motor_set_speed(600);
-		right_motor_set_speed(-600);
+	else if(max_prox_index == 5 || max_prox_index == 6){
+		right_motor_speed += SPEED_STEP;
+		left_motor_speed -= SPEED_STEP;
 	}
-	else if(max_prox_index == 5){
-		left_motor_set_speed(-600);
-		right_motor_set_speed(600);
+	// Limit the speed of the motor to MAX_SPEED (600)
+	if(left_motor_speed > MAX_SPEED){
+		left_motor_speed = MAX_SPEED;
+	}else if(left_motor_speed < -MAX_SPEED){
+		left_motor_speed = -MAX_SPEED;
 	}
-	else if(max_prox_index == 6){
-		left_motor_set_speed(-300);
-		right_motor_set_speed(300);
+	if(right_motor_speed > MAX_SPEED){
+		right_motor_speed = MAX_SPEED;
+	}else if(right_motor_speed < -MAX_SPEED){
+		right_motor_speed = -MAX_SPEED;
 	}
+
+	int left = left_motor_speed;
+	int right = right_motor_speed;
+	left_motor_set_speed(left);
+	right_motor_set_speed(right);
 }
 
 void proximity_start(void)
@@ -392,7 +401,7 @@ void proximity_start(void)
     pwmEnablePeriodicNotification(&PWMD2); // PWM general interrupt at the beginning of the period to handle pulse ignition.
     pwmEnableChannel(&PWMD2, 1, (pwmcnt_t) (PWM_CYCLE * ON_MEASUREMENT_POS)); // Enable channel 2 to trigger the measures.
 
-    chThdCreateStatic(proximity_thd_wa, sizeof(proximity_thd_wa), NORMALPRIO+1, proximity_thd, NULL);
+    chThdCreateStatic(proximity_thd_wa, sizeof(proximity_thd_wa), NORMALPRIO, proximity_thd, NULL);
 	
 }
 
