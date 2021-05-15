@@ -1,13 +1,11 @@
 #include "ch.h"
 #include "hal.h"
 #include <main.h>
-#include <usbcfg.h>
 #include <chprintf.h>
 
 #include <motors.h>
 #include <audio/microphone.h>
 #include <audio_processing.h>
-#include <communications.h>
 #include <fft.h>
 #include <arm_math.h>
 
@@ -26,14 +24,14 @@ static float micLeft_output[FFT_SIZE];
 //static float micBack_output[FFT_SIZE];
 
 #define MIN_VALUE_THRESHOLD 10000
-//resolution of 8kHz/512 = 15.625 Hz // 512 des 1024 utile car dans une FFT il a le pic dans les négatifs
+//resolution of 8kHz/512 = 15.625 Hz // 512 des 1024 utile car dans une FFT il a le pic dans les nï¿½gatifs
 // et celui dans les positifs.(-8kHz a 8kHz dans une FFT)
-#define MIN_FREQ 25 //we don’t analyze before this index to not use resources for nothing
+#define MIN_FREQ 25 //we donï¿½t analyze before this index to not use resources for nothing
 #define FREQ_MODE 26 //406.25Hz
 #define FREQ_DANCE1 58 //906.25Hz
 #define FREQ_DANCE2 61 //953.125HZ
 #define FREQ_DANCE3 65 //1015.625Hz
-#define MAX_FREQ 67 //we don’t analyze after this index to not use resources for nothing
+#define MAX_FREQ 67 //we donï¿½t analyze after this index to not use resources for nothing
 #define FREQ_MODE_L (FREQ_MODE-1)
 #define FREQ_MODE_H (FREQ_MODE+1)
 #define FREQ_DANCE1_L (FREQ_DANCE1-1)
@@ -167,39 +165,4 @@ void processAudioData(int16_t *data, uint16_t num_samples){
 		//mustSend++;
 		sound_remote(micLeft_output);
 		}
-}
-
-
-void wait_send_to_computer(void){
-	chBSemWait(&sendToComputer_sem);
-}
-
-float* get_audio_buffer_ptr(BUFFER_NAME_t name){
-	if(name == LEFT_CMPLX_INPUT){
-		return micLeft_cmplx_input;
-	}
-//	else if (name == RIGHT_CMPLX_INPUT){
-//		return micRight_cmplx_input;
-//	}
-//	else if (name == FRONT_CMPLX_INPUT){
-//		return micFront_cmplx_input;
-//	}
-//	else if (name == BACK_CMPLX_INPUT){
-//		return micBack_cmplx_input;
-//	}
-//	else if (name == LEFT_OUTPUT){
-//		return micLeft_output;
-//	}
-//	else if (name == RIGHT_OUTPUT){
-//		return micRight_output;
-//	}
-//	else if (name == FRONT_OUTPUT){
-//		return micFront_output;
-//	}
-//	else if (name == BACK_OUTPUT){
-//		return micBack_output;
-//	}
-	else{
-		return NULL;
-	}
 }

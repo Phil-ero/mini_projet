@@ -234,7 +234,7 @@ static THD_FUNCTION(proximity_thd, arg)
 }
 
  /**
- * @brief   Calback called before each seuquence of ADC measurement to prepare the 
+ * @brief   Callback called before each sequence of ADC measurement to prepare the
  * 			power pulse of the proximity sensors
  * 
  * @param pwmp		PWM pointer (not used)
