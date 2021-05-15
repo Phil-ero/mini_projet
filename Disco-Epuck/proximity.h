@@ -7,6 +7,7 @@ extern "C" {
 
 #include <stdint.h>
 
+
 #define PROXIMITY_NB_CHANNELS 8
 
 /** Struct containing a proximity measurment message. */
@@ -56,14 +57,6 @@ int get_prox(unsigned int sensor_number);
  */
 int get_calibrated_prox(unsigned int sensor_number);
 
- /**
- * @brief   Returns the last ambiant light value measured by the chosen sensor
- * 
- * @param sensor_number		0-7
- * 
- * @return					Last ambiant light value measured by the sensor
- */
-int get_ambient_light(unsigned int sensor_number);
 
 #ifdef __cplusplus
 }

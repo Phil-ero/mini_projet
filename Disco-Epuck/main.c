@@ -162,6 +162,7 @@ int main(void)
     usb_start();
     //inits the motors
     motors_init();
+    //init the proximity sensors and calibrate
     proximity_start();
     calibrate_ir();
     //start for the disco-epuck sound-system

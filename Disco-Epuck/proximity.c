@@ -435,12 +435,4 @@ int get_calibrated_prox(unsigned int sensor_number) {
 	}
 }
 
-int get_ambient_light(unsigned int sensor_number) {
-	if (sensor_number > 7) {
-		return 0;
-	} else {
-		return prox_values.ambient[sensor_number];
-	}
-}
-
 /**************************END PUBLIC FUNCTIONS***********************************/

@@ -8,7 +8,7 @@ extern "C" {
 #include "camera/dcmi_camera.h"
 #include "msgbus/messagebus.h"
 #include "parameter/parameter.h"
-#include "../lib/e-puck2_main-processor/src/audio/play_sound_file.h"
+#include <play_sound_file.h>
 
 enum dance_selection{
 	//dances available
