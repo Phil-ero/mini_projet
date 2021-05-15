@@ -24,9 +24,9 @@ static float micLeft_output[FFT_SIZE];
 //static float micBack_output[FFT_SIZE];
 
 #define MIN_VALUE_THRESHOLD 10000
-//resolution of 8kHz/512 = 15.625 Hz // 512 des 1024 utile car dans une FFT il a le pic dans les n�gatifs
+//resolution of 8kHz/512 = 15.625 Hz // 512 des 1024 utile car dans une FFT il a le pic dans les negatifs
 // et celui dans les positifs.(-8kHz a 8kHz dans une FFT)
-#define MIN_FREQ 25 //we don�t analyze before this index to not use resources for nothing
+#define MIN_FREQ 25 //we don't analyze before this index to not use resources for nothing
 #define FREQ_MODE 26 //406.25Hz
 #define FREQ_DANCE1 58 //906.25Hz
 #define FREQ_DANCE2 61 //953.125HZ
@@ -41,7 +41,7 @@ static float micLeft_output[FFT_SIZE];
 #define FREQ_DANCE3_L (FREQ_DANCE3-1)
 #define FREQ_DANCE3_H (FREQ_DANCE3+1)
 #define dance_mode true
-#define proximity_mode false
+#define chasse_mode false
 
 /*
 * Simple function used to detect the highest value in a buffer
@@ -57,12 +57,12 @@ void sound_remote(float* data){
 			max_norm_index = i;
 		}
 	}
-	//CHANGE MODE for proximity
+	//CHANGE MODE for chasse
 	if(max_norm_index >= FREQ_MODE_L && max_norm_index <= FREQ_MODE_H && get_mode()){
 		stopCurrentSoundFile();
 		waitSoundFileHasFinished();
 		play_true();
-		change_mode(proximity_mode);
+		change_mode(chasse_mode);
 		change_blink_speed (1000);
 		left_motor_set_speed(0);
 		right_motor_set_speed(0);
