@@ -12,6 +12,7 @@
 //semaphore
 static BSEMAPHORE_DECL(sendToComputer_sem, TRUE);
 
+//For our application, we use only the left mic
 //2 times FFT_SIZE because these arrays contain complex numbers (real + imaginary)
 static float micLeft_cmplx_input[2 * FFT_SIZE];
 //static float micRight_cmplx_input[2 * FFT_SIZE];
@@ -31,7 +32,7 @@ static float micLeft_output[FFT_SIZE];
 #define FREQ_DANCE1 58 //906.25Hz
 #define FREQ_DANCE2 61 //953.125HZ
 #define FREQ_DANCE3 65 //1015.625Hz
-#define MAX_FREQ 67 //we don�t analyze after this index to not use resources for nothing
+#define MAX_FREQ 67 //we don't analyze after this index to not use resources for nothing
 #define FREQ_MODE_L (FREQ_MODE-1)
 #define FREQ_MODE_H (FREQ_MODE+1)
 #define FREQ_DANCE1_L (FREQ_DANCE1-1)
