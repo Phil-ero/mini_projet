@@ -1,8 +1,9 @@
+#include "chasse.h"
+
 #include <stdio.h>
 #include <string.h>
 #include "ch.h"
 #include "hal.h"
-#include "proximity.h"
 #include <main.h>
 #include <motors.h>
 
@@ -177,58 +178,58 @@ static THD_FUNCTION(proximity_thd, arg)
     messagebus_topic_init(&proximity_topic, &prox_topic_lock, &prox_topic_condvar, &prox_values, sizeof(prox_values));
     messagebus_advertise_topic(&bus, &proximity_topic, "/proximity");
     while (true) {
-
-    	chBSemWait(&adc2_ready);
-
-    	prox_values.ambient[0] = adc2_values[0];
-    	prox_values.ambient[1] = adc2_values[4];
-    	prox_values.ambient[2] = adc2_values[8];
-    	prox_values.ambient[3] = adc2_values[12];
-    	prox_values.ambient[4] = adc2_values[1];
-    	prox_values.ambient[5] = adc2_values[5];
-    	prox_values.ambient[6] = adc2_values[9];
-    	prox_values.ambient[7] = adc2_values[13];
-
-    	prox_values.reflected[0] = adc2_values[2];
-    	prox_values.reflected[1] = adc2_values[6];
-    	prox_values.reflected[2] = adc2_values[10];
-    	prox_values.reflected[3] = adc2_values[14];
-    	prox_values.reflected[4] = adc2_values[3];
-    	prox_values.reflected[5] = adc2_values[7];
-    	prox_values.reflected[6] = adc2_values[11];
-    	prox_values.reflected[7] = adc2_values[15];
-
-        for (int i = 0; i < PROXIMITY_NB_CHANNELS; i++) {
-        	prox_values.delta[i] = prox_values.ambient[i] - prox_values.reflected[i];
-        }
-
-        messagebus_topic_publish(&proximity_topic, &prox_values, sizeof(prox_values));
-
-        if(calibrationInProgress) {
-        	switch(calibrationState) {
-				case 0:
-					memset(prox_values.initValue, 0, PROXIMITY_NB_CHANNELS * sizeof(unsigned int));
-					memset(calibrationSum, 0, PROXIMITY_NB_CHANNELS * sizeof(int32_t));
-					calibrationNumSamples = 0;
-					calibrationState = 1;
-					break;
-
-				case 1:
-					for(int i=0; i<PROXIMITY_NB_CHANNELS; i++) {
-						calibrationSum[i] += get_prox(i);
-					}
-					calibrationNumSamples++;
-					if(calibrationNumSamples == 100) {
-						for(int i=0; i<PROXIMITY_NB_CHANNELS; i++) {
-							prox_values.initValue[i] = calibrationSum[i]/100;
-						}
-						calibrationInProgress = 0;
-					}
-					break;
-        	}
-        }
         if (!get_mode()){
-            proximity_remote();
+
+			chBSemWait(&adc2_ready);
+
+			prox_values.ambient[0] = adc2_values[0];
+			prox_values.ambient[1] = adc2_values[4];
+			prox_values.ambient[2] = adc2_values[8];
+			prox_values.ambient[3] = adc2_values[12];
+			prox_values.ambient[4] = adc2_values[1];
+			prox_values.ambient[5] = adc2_values[5];
+			prox_values.ambient[6] = adc2_values[9];
+			prox_values.ambient[7] = adc2_values[13];
+
+			prox_values.reflected[0] = adc2_values[2];
+			prox_values.reflected[1] = adc2_values[6];
+			prox_values.reflected[2] = adc2_values[10];
+			prox_values.reflected[3] = adc2_values[14];
+			prox_values.reflected[4] = adc2_values[3];
+			prox_values.reflected[5] = adc2_values[7];
+			prox_values.reflected[6] = adc2_values[11];
+			prox_values.reflected[7] = adc2_values[15];
+
+			for (int i = 0; i < PROXIMITY_NB_CHANNELS; i++) {
+				prox_values.delta[i] = prox_values.ambient[i] - prox_values.reflected[i];
+			}
+
+			messagebus_topic_publish(&proximity_topic, &prox_values, sizeof(prox_values));
+
+			if(calibrationInProgress) {
+				switch(calibrationState) {
+					case 0:
+						memset(prox_values.initValue, 0, PROXIMITY_NB_CHANNELS * sizeof(unsigned int));
+						memset(calibrationSum, 0, PROXIMITY_NB_CHANNELS * sizeof(int32_t));
+						calibrationNumSamples = 0;
+						calibrationState = 1;
+						break;
+
+					case 1:
+						for(int i=0; i<PROXIMITY_NB_CHANNELS; i++) {
+							calibrationSum[i] += get_prox(i);
+						}
+						calibrationNumSamples++;
+						if(calibrationNumSamples == 100) {
+							for(int i=0; i<PROXIMITY_NB_CHANNELS; i++) {
+								prox_values.initValue[i] = calibrationSum[i]/100;
+							}
+							calibrationInProgress = 0;
+						}
+						break;
+				}
+			}
+			proximity_remote();
         }
     }
 }

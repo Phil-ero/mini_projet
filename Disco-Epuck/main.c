@@ -15,12 +15,12 @@
 #include <arm_math.h>
 
 //includes for disco-epuck
-#include <proximity.h>
 #include "leds.h"
 #include "../lib/e-puck2_main-processor/src/sdio.h"
 #include "../lib/e-puck2_main-processor/src/fat.h"
 #include "../lib/e-puck2_main-processor/src/audio/audio_thread.h"
 #include "../lib/e-puck2_main-processor/src/spi_comm.h"
+#include "chasse.h"
 
 messagebus_t bus;
 MUTEX_DECL(bus_lock);
